@@ -1,59 +1,84 @@
-TYPEMOTION
+========================================
+  TYPEMOTION
+  README
+========================================
 
-Browser-based text animation studio for creating kinetic typography, animated titles, GIFs, and motion graphics directly in the browser.
+OVERVIEW
+--------
+A browser-based text animation studio for creating kinetic typography,
+animated titles, GIFs, and motion graphics — directly in the browser.
+No installs, no plugins, no sign-up. Open the file and start animating.
 
-Features
-Real-time text animation preview
-Multiple animation presets
-Typography controls
-Google Font support
-Fill & outline rendering
-Timeline playback & scrubbing
-Motion blur & easing controls
-MP4 / WebM / GIF export
-Save & load project files
-Responsive modern UI
-Animation Presets
-Scale Pop
-Kerning
-Slide In
-Decoder
-Typewriter
-Random Fade
-Rotate In
-Blur In
-Fade
-Built With
-HTML5
-CSS3
-Vanilla JavaScript
-Canvas API
-Usage
 
-Simply open the HTML file in your browser.
+FEATURES
+--------
+- Real-time text animation preview
+- Multiple animation presets
+- Typography controls with Google Font support
+- Fill & outline rendering modes
+- Timeline playback & scrubbing
+- Motion blur & easing controls
+- MP4 / WebM / GIF export
+- Save & load project files
+- Responsive modern UI
 
-double-click typemotion.html
 
-Or drag the file into a browser window.
+ANIMATION PRESETS
+-----------------
+  Scale         Kerning        Decoder       Random
+  Pop           Slide In       Typewriter    Rotate In
+  Blur In       Fade
 
-Export
 
-Supports:
+BUILT WITH
+----------
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Canvas API
 
-MP4 / WebM
-GIF
-Optional transparent background export
-Best For
-Motion designers
-Social media content
-Kinetic typography
-UI motion exploration
-Quick animation concepts
-Browser Support
 
-Recommended:
+USAGE
+-----
+No installation or setup required. Simply open the file in any modern browser.
 
-Chrome
-Edge
-Brave
-Safari (latest versions)
+  Option 1 — Double-click the file:
+    typemotion.html
+
+  Option 2 — Drag the file into an open browser window.
+
+The tool runs entirely in the browser with no internet connection required
+(except for loading Google Fonts, if selected).
+
+
+EXPORT
+------
+Supported output formats:
+
+  - MP4 / WebM
+  - GIF
+  - Optional transparent background export
+
+
+BEST FOR
+--------
+- Motion designers
+- Social media content
+- Kinetic typography
+- UI motion exploration
+- Quick animation concepts
+
+
+BROWSER SUPPORT
+---------------
+Recommended browsers (latest versions):
+
+  - Chrome
+  - Edge
+  - Brave
+  - Safari
+
+
+========================================
+  Open. Animate. Export.
+========================================
