@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TYPEMOTION — Text Animation Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0A0A0A;
+    --grey-900:#1A1A1A;
+    --grey-800:#242424;
+    --grey-700:#333333;
+    --grey-500:#6B6B6B;
+    --grey-300:#B8B8B8;
+    --grey-200:#D9D9D9;
+    --grey-100:#EEEEEE;
+    --white:#FFFFFF;
+    --accent:#FF3B1F;
+    --accent-soft:#FF6347;
+    --shadow-soft:0 2px 12px rgba(0,0,0,0.06);
+    --shadow-med:0 4px 20px rgba(0,0,0,0.08);
+    --pill:999px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:400;
+    background:var(--grey-100);
+    color:var(--black);
+    font-size:15px;
+    letter-spacing:0.02em;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== LAYOUT GRID ===== */
+  .app{
+    display:grid;
+    grid-template-rows:56px 1fr;
+    grid-template-columns:280px 1fr 300px;
+    grid-template-areas:
+      "header header header"
+      "left   stage  right";
+    height:100vh;
+    gap:1px;
+    background:var(--grey-200);
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    grid-area:header;
+    background:var(--white);
+    display:flex;
+    align-items:center;
+    padding:0 20px;
+    gap:24px;
+    box-shadow:var(--shadow-soft);
+    z-index:10;
+  }
+  .logo{
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.08em;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .logo::before{
+    content:"";
+    width:12px;height:12px;
+    background:var(--accent);
+    border-radius:50%;
+  }
+  .header-actions{margin-left:auto;display:flex;gap:8px;}
+
+  /* ===== PILL BUTTONS ===== */
+  .btn{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    border:none;
+    border-radius:var(--pill);
+    padding:9px 18px;
+    cursor:pointer;
+    background:var(--grey-100);
+    color:var(--black);
+    transition:all .15s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .btn:hover{background:var(--grey-200);transform:translateY(-1px);box-shadow:var(--shadow-soft);}
+  .btn:active{transform:translateY(0);}
+  .btn.primary{background:var(--black);color:var(--white);}
+  .btn.primary:hover{background:var(--grey-800);}
+  .btn.accent{background:var(--accent);color:var(--white);}
+  .btn.accent:hover{background:var(--accent-soft);}
+  .btn.ghost{background:transparent;border:1px solid var(--grey-200);}
+  .btn.icon{width:36px;height:36px;padding:0;justify-content:center;}
+  .btn svg{width:16px;height:16px;flex-shrink:0;}
+
+  /* ===== PANELS ===== */
+  .panel{
+    background:var(--white);
+    overflow-y:auto;
+    overflow-x:hidden;
+  }
+  .panel-left{grid-area:left;}
+  .panel-right{grid-area:right;}
+  .panel::-webkit-scrollbar{width:6px;}
+  .panel::-webkit-scrollbar-thumb{background:var(--grey-200);border-radius:3px;}
+
+  .section{
+    padding:18px 20px;
+    border-bottom:1px solid var(--grey-100);
+  }
+  .section-title{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--grey-500);
+    margin-bottom:14px;
+  }
+
+  /* ===== FORM CONTROLS ===== */
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+    color:var(--grey-700);
+  }
+  .field-row{display:flex;gap:8px;align-items:center;}
+
+  input[type=text],
+  input[type=number],
+  select,
+  textarea{
+    font-family:inherit;
+    font-size:15px;
+    width:100%;
+    padding:9px 14px;
+    border:1px solid var(--grey-200);
+    border-radius:var(--pill);
+    background:var(--white);
+    color:var(--black);
+    outline:none;
+    transition:border-color .15s;
+  }
+  textarea{border-radius:18px;resize:vertical;min-height:70px;line-height:1.4;}
+  input:focus,select:focus,textarea:focus{border-color:var(--black);}
+  select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:32px;}
+
+  /* Range slider */
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:4px;
+    background:var(--grey-200);
+    border-radius:2px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--black);
+    cursor:pointer;
+    box-shadow:var(--shadow-soft);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border:none;
+    border-radius:50%;background:var(--black);cursor:pointer;
+  }
+  .range-val{font-weight:600;min-width:44px;text-align:right;font-variant-numeric:tabular-nums;}
+
+  /* Color input */
+  input[type=color]{
+    -webkit-appearance:none;appearance:none;
+    width:40px;height:32px;
+    border:1px solid var(--grey-200);
+    border-radius:var(--pill);
+    cursor:pointer;padding:0;
+    background:transparent;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper{padding:3px;}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:var(--pill);}
+  input[type=color]::-moz-color-swatch{border:none;border-radius:var(--pill);}
+
+  /* Toggle pill group */
+  .pill-group{
+    display:flex;
+    background:var(--grey-100);
+    border-radius:var(--pill);
+    padding:3px;gap:2px;
+  }
+  .pill-group button{
+    flex:1;
+    font-family:inherit;
+    font-size:13px;font-weight:500;
+    border:none;background:transparent;
+    border-radius:var(--pill);
+    padding:7px 8px;cursor:pointer;
+    color:var(--grey-500);
+    transition:all .15s;
+    letter-spacing:0.02em;
+  }
+  .pill-group button.active{
+    background:var(--white);
+    color:var(--black);
+    box-shadow:var(--shadow-soft);
+  }
+  .pill-group button svg{width:16px;height:16px;display:block;margin:0 auto;}
+  .pill-group button.active svg{stroke:var(--accent);}
+
+  /* Switch */
+  .switch{
+    position:relative;width:42px;height:24px;
+    background:var(--grey-200);
+    border-radius:var(--pill);
+    cursor:pointer;transition:background .2s;
+    flex-shrink:0;
+  }
+  .switch::after{
+    content:"";position:absolute;
+    top:3px;left:3px;width:18px;height:18px;
+    background:var(--white);border-radius:50%;
+    box-shadow:var(--shadow-soft);
+    transition:transform .2s;
+  }
+  .switch.on{background:var(--accent);}
+  .switch.on::after{transform:translateX(18px);}
+  .switch-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .switch-row:last-child{margin-bottom:0;}
+  .switch-row span{font-size:14px;font-weight:500;letter-spacing:0.02em;}
+
+  /* ===== STAGE ===== */
+  .stage{
+    grid-area:stage;
+    background:var(--grey-100);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .canvas-wrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow:hidden;
+    min-height:0;
+  }
+  .canvas-frame{
+    position:relative;
+    max-width:100%;
+    max-height:100%;
+    box-shadow:var(--shadow-med);
+    background-image:
+      linear-gradient(45deg,#e8e8e8 25%,transparent 25%),
+      linear-gradient(-45deg,#e8e8e8 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#e8e8e8 75%),
+      linear-gradient(-45deg,transparent 75%,#e8e8e8 75%);
+    background-size:16px 16px;
+    background-position:0 0,0 8px,8px -8px,-8px 0;
+    background-color:#f8f8f8;
+  }
+  #preview{display:block;max-width:100%;max-height:100%;width:auto;height:auto;}
+
+  /* ===== TIMELINE ===== */
+  .timeline{
+    background:var(--white);
+    border-top:1px solid var(--grey-200);
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .play-btn{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--black);
+    color:var(--white);
+    border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    transition:all .15s;
+  }
+  .play-btn:hover{background:var(--accent);transform:scale(1.05);}
+  .play-btn svg{width:18px;height:18px;}
+  .tl-track{
+    flex:1;position:relative;
+    height:44px;
+    background:var(--grey-100);
+    border-radius:var(--pill);
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .tl-fill{
+    position:absolute;top:0;left:0;bottom:0;
+    background:var(--accent);
+    border-radius:var(--pill);
+    pointer-events:none;
+    opacity:0.15;
+  }
+  .tl-head{
+    position:absolute;top:4px;bottom:4px;
+    width:4px;background:var(--accent);
+    border-radius:2px;
+    pointer-events:none;
+    box-shadow:0 0 8px rgba(255,59,31,0.5);
+  }
+  .tl-ticks{position:absolute;inset:0;display:flex;pointer-events:none;}
+  .tl-ticks span{flex:1;border-right:1px solid var(--grey-200);position:relative;}
+  .tl-ticks span:last-child{border:none;}
+  .tl-ticks span::after{
+    content:attr(data-t);
+    position:absolute;top:4px;left:6px;
+    font-size:10px;color:var(--grey-500);
+    font-weight:600;letter-spacing:0.05em;
+  }
+  .tl-time{
+    font-variant-numeric:tabular-nums;
+    font-weight:600;font-size:14px;
+    min-width:80px;text-align:center;
+    letter-spacing:0.04em;
+  }
+  .tl-duration{display:flex;align-items:center;gap:8px;}
+  .tl-duration input{width:60px;text-align:center;padding:8px;}
+
+  /* ===== PRESETS GRID ===== */
+  .preset-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .preset{
+    font-family:inherit;
+    font-size:13px;font-weight:500;
+    padding:10px 6px;
+    border:1px solid var(--grey-200);
+    border-radius:var(--pill);
+    background:var(--white);
+    cursor:pointer;
+    transition:all .15s;
+    letter-spacing:0.02em;
+    text-align:center;
+  }
+  .preset:hover{border-color:var(--black);}
+  .preset.active{
+    background:var(--black);
+    color:var(--white);
+    border-color:var(--black);
+  }
+
+  /* ===== EXPORT MODAL ===== */
+  .modal-back{
+    position:fixed;inset:0;
+    background:rgba(10,10,10,0.5);
+    backdrop-filter:blur(4px);
+    display:none;
+    align-items:center;justify-content:center;
+    z-index:100;
+  }
+  .modal-back.open{display:flex;}
+  .modal{
+    background:var(--white);
+    border-radius:24px;
+    padding:28px;
+    width:min(420px,90vw);
+    box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h2{
+    font-size:20px;font-weight:700;
+    letter-spacing:0.06em;text-transform:uppercase;
+    margin-bottom:20px;
+  }
+  .modal .field{margin-bottom:16px;}
+  .modal-actions{display:flex;gap:8px;margin-top:24px;}
+  .modal-actions .btn{flex:1;justify-content:center;}
+  .progress{
+    height:6px;background:var(--grey-100);
+    border-radius:3px;overflow:hidden;
+    margin-top:16px;display:none;
+  }
+  .progress.active{display:block;}
+  .progress-bar{height:100%;background:var(--accent);width:0;transition:width .1s;}
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:1100px){
+    .app{
+      grid-template-columns:240px 1fr 260px;
+    }
+  }
+  @media (max-width:900px){
+    html,body{overflow:auto;height:auto;}
+    .app{
+      display:flex;
+      flex-direction:column;
+      height:auto;min-height:100vh;
+      gap:1px;
+    }
+    header{position:sticky;top:0;}
+    .stage{order:1;min-height:50vh;}
+    .panel-left{order:2;}
+    .panel-right{order:3;}
+    .panel{overflow:visible;max-height:none;}
+    .header-actions .btn span{display:none;}
+    .header-actions .btn{padding:9px 12px;}
+    .timeline{flex-wrap:wrap;gap:10px;}
+    .tl-track{min-width:100%;order:-1;}
+  }
+
+  /* hidden helpers */
+  #renderCanvas{display:none;}
+  #fileInput{display:none;}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ HEADER ============ -->
+  <header>
+    <div class="logo">TYPEMOTION</div>
+    <div class="header-actions">
+      <button class="btn ghost" id="btnOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg><span>Open</span></button>
+      <button class="btn ghost" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span>Save</span></button>
+      <button class="btn accent" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>Export</span></button>
+    </div>
+  </header>
+
+  <!-- ============ LEFT PANEL ============ -->
+  <aside class="panel panel-left">
+
+    <div class="section">
+      <div class="section-title">Text Content</div>
+      <div class="field">
+        <textarea id="txtContent" placeholder="Type your text...">HELLO WORLD</textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Typography</div>
+      <div class="field">
+        <label>Font Family</label>
+        <select id="fontFamily">
+          <option>Archivo Black</option>
+          <option>Anton</option>
+          <option>Barlow Condensed</option>
+          <option>Bebas Neue</option>
+          <option>DM Sans</option>
+          <option>Inter</option>
+          <option>Montserrat</option>
+          <option>Oswald</option>
+          <option>Playfair Display</option>
+          <option>Poppins</option>
+          <option>Roboto</option>
+          <option>Roboto Condensed</option>
+          <option>Space Grotesk</option>
+          <option>Space Mono</option>
+          <option>Work Sans</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Custom Google Font</label>
+        <input type="text" id="customFont" placeholder="e.g. Rubik Mono One">
+      </div>
+      <div class="field">
+        <label>Weight & Style</label>
+        <div class="pill-group" id="weightGroup">
+          <button data-w="400" class="active">Regular</button>
+          <button data-w="700">Bold</button>
+        </div>
+        <div style="height:6px"></div>
+        <div class="pill-group" id="styleGroup">
+          <button data-s="normal" class="active">Normal</button>
+          <button data-s="italic">Italic</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Size</label>
+        <div class="field-row">
+          <input type="range" id="fontSize" min="20" max="300" value="120">
+          <span class="range-val" id="fontSizeVal">120</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Letter Spacing</label>
+        <div class="field-row">
+          <input type="range" id="letterSpace" min="-20" max="100" value="0">
+          <span class="range-val" id="letterSpaceVal">0</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Alignment</label>
+        <div class="pill-group" id="alignGroup">
+          <button data-a="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
+          <button data-a="center" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
+          <button data-a="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fill & Stroke</div>
+      <div class="field">
+        <label>Render Mode</label>
+        <div class="pill-group" id="renderGroup">
+          <button data-r="fill" class="active">Fill</button>
+          <button data-r="stroke">Outline</button>
+          <button data-r="both">Both</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-row">
+          <div style="flex:1">
+            <label>Text Color</label>
+            <input type="color" id="textColor" value="#0A0A0A">
+          </div>
+          <div style="flex:1">
+            <label>Stroke</label>
+            <input type="color" id="strokeColor" value="#FF3B1F">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Stroke Width</label>
+        <div class="field-row">
+          <input type="range" id="strokeWidth" min="1" max="20" value="3">
+          <span class="range-val" id="strokeWidthVal">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Background</div>
+      <div class="switch-row">
+        <span>Show Background</span>
+        <div class="switch on" id="bgSwitch"></div>
+      </div>
+      <div class="field">
+        <label>Color</label>
+        <input type="color" id="bgColor" value="#FFFFFF">
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ============ STAGE ============ -->
+  <main class="stage">
+    <div class="canvas-wrap">
+      <div class="canvas-frame">
+        <canvas id="preview" width="1280" height="720"></canvas>
+      </div>
+    </div>
+    <div class="timeline">
+      <button class="play-btn" id="btnPlay">
+        <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+      </button>
+      <div class="tl-track" id="tlTrack">
+        <div class="tl-ticks" id="tlTicks"></div>
+        <div class="tl-fill" id="tlFill"></div>
+        <div class="tl-head" id="tlHead"></div>
+      </div>
+      <div class="tl-time" id="tlTime">0.00 / 3.00</div>
+      <div class="tl-duration">
+        <label style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--grey-500)">Dur</label>
+        <input type="number" id="duration" min="0.5" max="5" step="0.1" value="3">
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ RIGHT PANEL ============ -->
+  <aside class="panel panel-right">
+
+    <div class="section">
+      <div class="section-title">Animation Preset</div>
+      <div class="preset-grid" id="presetGrid">
+        <button class="preset active" data-p="scale">Scale Pop</button>
+        <button class="preset" data-p="kerning">Kerning</button>
+        <button class="preset" data-p="slideL">Slide In ←</button>
+        <button class="preset" data-p="slideR">Slide In →</button>
+        <button class="preset" data-p="slideU">Slide Up ↑</button>
+        <button class="preset" data-p="slideD">Slide Down ↓</button>
+        <button class="preset" data-p="decoder">Decoder</button>
+        <button class="preset" data-p="typewriter">Typewriter</button>
+        <button class="preset" data-p="randomFade">Random Fade</button>
+        <button class="preset" data-p="fade">Simple Fade</button>
+        <button class="preset" data-p="rotate">Rotate In</button>
+        <button class="preset" data-p="blur">Blur In</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Timing</div>
+      <div class="field">
+        <label>Easing</label>
+        <select id="easing">
+          <option value="linear">Linear</option>
+          <option value="easeIn">Ease In</option>
+          <option value="easeOut" selected>Ease Out</option>
+          <option value="easeInOut">Ease In-Out</option>
+          <option value="expoOut">Expo Out</option>
+          <option value="backOut">Back Out</option>
+          <option value="elastic">Elastic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Animate In Duration</label>
+        <div class="field-row">
+          <input type="range" id="animIn" min="0.1" max="3" step="0.05" value="1">
+          <span class="range-val" id="animInVal">1.0s</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Stagger (per letter)</label>
+        <div class="field-row">
+          <input type="range" id="stagger" min="0" max="200" value="40">
+          <span class="range-val" id="staggerVal">40ms</span>
+        </div>
+      </div>
+      <div class="switch-row">
+        <span>Animate Out (mirror)</span>
+        <div class="switch" id="animOutSwitch"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Transform</div>
+      <div class="field">
+        <label>Opacity</label>
+        <div class="field-row">
+          <input type="range" id="opacity" min="0" max="100" value="100">
+          <span class="range-val" id="opacityVal">100%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Rotation</label>
+        <div class="field-row">
+          <input type="range" id="rotation" min="-180" max="180" value="0">
+          <span class="range-val" id="rotationVal">0°</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Scale</label>
+        <div class="field-row">
+          <input type="range" id="scale" min="10" max="300" value="100">
+          <span class="range-val" id="scaleVal">100%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Blur</label>
+        <div class="field-row">
+          <input type="range" id="blur" min="0" max="30" value="0">
+          <span class="range-val" id="blurVal">0px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Effects</div>
+      <div class="switch-row">
+        <span>Motion Blur</span>
+        <div class="switch" id="motionBlurSwitch"></div>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- ============ EXPORT MODAL ============ -->
+<div class="modal-back" id="exportModal">
+  <div class="modal">
+    <h2>Export Animation</h2>
+    <div class="field">
+      <label>Format</label>
+      <div class="pill-group" id="formatGroup">
+        <button data-f="mp4" class="active">MP4 / WebM</button>
+        <button data-f="gif">GIF</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Frame Rate</label>
+      <select id="exportFps">
+        <option value="24">24 fps</option>
+        <option value="30" selected>30 fps</option>
+        <option value="60">60 fps</option>
+      </select>
+    </div>
+    <div class="switch-row">
+      <span>Include Background</span>
+      <div class="switch on" id="exportBgSwitch"></div>
+    </div>
+    <div class="progress" id="exportProgress"><div class="progress-bar" id="exportBar"></div></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="btnCancelExport">Cancel</button>
+      <button class="btn primary" id="btnDoExport">Render</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="renderCanvas" width="1280" height="720"></canvas>
+<input type="file" id="fileInput" accept=".json,.typemotion">
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   TYPEMOTION — state & rendering engine
+   ═══════════════════════════════════════════════════════════ */
+
+const state = {
+  text: "HELLO WORLD",
+  font: "Archivo Black",
+  weight: 400,
+  style: "normal",
+  size: 120,
+  letterSpace: 0,
+  align: "center",
+  renderMode: "fill",
+  textColor: "#0A0A0A",
+  strokeColor: "#FF3B1F",
+  strokeWidth: 3,
+  bgOn: true,
+  bgColor: "#FFFFFF",
+  // animation
+  preset: "scale",
+  easing: "easeOut",
+  animIn: 1.0,
+  stagger: 40,
+  animOut: false,
+  // transform
+  opacity: 100,
+  rotation: 0,
+  scale: 100,
+  blur: 0,
+  motionBlur: false,
+  // timeline
+  duration: 3.0,
+  time: 0,
+  playing: false
+};
+
+const loadedFonts = new Set();
+const decoderChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+let randomOrder = [];
+let decoderSeed = [];
+
+/* ---------- Easing functions ---------- */
+const ease = {
+  linear: t => t,
+  easeIn: t => t*t*t,
+  easeOut: t => 1 - Math.pow(1-t, 3),
+  easeInOut: t => t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2,
+  expoOut: t => t===1 ? 1 : 1 - Math.pow(2, -10*t),
+  backOut: t => { const c=1.70158+1; return 1 + c*Math.pow(t-1,3) + 1.70158*Math.pow(t-1,2); },
+  elastic: t => t===0?0:t===1?1:Math.pow(2,-10*t)*Math.sin((t*10-0.75)*(2*Math.PI/3))+1
+};
+
+/* ---------- Font loading ---------- */
+function loadFont(name){
+  if(!name || loadedFonts.has(name)) return Promise.resolve();
+  loadedFonts.add(name);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${name.replace(/ /g,'+')}:ital,wght@0,400;0,700;1,400;1,700&display=swap`;
+  document.head.appendChild(link);
+  return document.fonts.ready.then(()=>new Promise(r=>setTimeout(r,100)));
+}
+
+/* ---------- Shuffle helpers ---------- */
+function rebuildRandom(){
+  const chars = state.text.replace(/\n/g,'').split('');
+  randomOrder = chars.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  decoderSeed = chars.map(()=>Math.floor(Math.random()*1000));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS RENDERER
+   ═══════════════════════════════════════════════════════════ */
+function render(ctx, t, exportBg = null){
+  const W = 1280, H = 720;
+  ctx.clearRect(0,0,W,H);
+
+  const showBg = exportBg !== null ? exportBg : state.bgOn;
+  if(showBg){
+    ctx.fillStyle = state.bgColor;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Compute animation progress
+  const dur = state.duration;
+  const inDur = state.animIn;
+  const outDur = state.animOut ? state.animIn : 0;
+  const holdStart = inDur;
+  const holdEnd = Math.max(holdStart, dur - outDur);
+
+  let phase = 'hold', p = 1;
+  if(t < holdStart){ phase='in'; p = t/inDur; }
+  else if(t > holdEnd && state.animOut){ phase='out'; p = 1 - (t-holdEnd)/outDur; }
+  p = Math.max(0,Math.min(1,p));
+
+  // Build font string
+  const fontStr = `${state.style} ${state.weight} ${state.size}px "${state.font}", sans-serif`;
+  ctx.font = fontStr;
+  ctx.textBaseline = 'middle';
+
+  // Split into lines & chars
+  const lines = state.text.split('\n');
+  const lineH = state.size * 1.15;
+  const totalH = lines.length * lineH;
+  const startY = H/2 - totalH/2 + lineH/2;
+
+  ctx.save();
+
+  // Global transforms
+  ctx.translate(W/2, H/2);
+  ctx.rotate(state.rotation * Math.PI/180);
+  ctx.scale(state.scale/100, state.scale/100);
+  ctx.translate(-W/2, -H/2);
+  ctx.globalAlpha = state.opacity/100;
+
+  if(state.blur > 0) ctx.filter = `blur(${state.blur}px)`;
+
+  let charIdx = 0;
+  const totalChars = state.text.replace(/\n/g,'').length;
+
+  lines.forEach((line, li) => {
+    const chars = line.split('');
+    // measure with letter spacing
+    const widths = chars.map(c => ctx.measureText(c).width);
+    const totalW = widths.reduce((a,b)=>a+b,0) + (chars.length-1)*state.letterSpace;
+
+    let lineX;
+    if(state.align==='left') lineX = 80;
+    else if(state.align==='right') lineX = W - 80 - totalW;
+    else lineX = W/2 - totalW/2;
+
+    const y = startY + li*lineH;
+    let x = lineX;
+
+    chars.forEach((ch, ci) => {
+      const st = (state.stagger/1000);
+      let localP;
+      if(state.preset==='randomFade'){
+        const order = randomOrder.indexOf(charIdx);
+        const delay = order * st;
+        localP = Math.max(0, Math.min(1, (p*inDur - delay) / Math.max(0.1, inDur - (totalChars-1)*st)));
+      } else {
+        const delay = charIdx * st;
+        localP = Math.max(0, Math.min(1, (p*inDur - delay) / Math.max(0.1, inDur - (totalChars-1)*st)));
+      }
+      const e = ease[state.easing](localP);
+
+      ctx.save();
+
+      let dx=0, dy=0, sc=1, rot=0, alpha=1, bl=0;
+      let drawChar = ch;
+      let kern = 0;
+
+      switch(state.preset){
+        case 'scale':
+          sc = e; alpha = e; break;
+        case 'kerning':
+          kern = (1-e) * 80; alpha = e; break;
+        case 'slideL':
+          dx = -(1-e)*200; alpha = e; break;
+        case 'slideR':
+          dx = (1-e)*200; alpha = e; break;
+        case 'slideU':
+          dy = (1-e)*120; alpha = e; break;
+        case 'slideD':
+          dy = -(1-e)*120; alpha = e; break;
+        case 'decoder':
+          if(localP < 0.85 && localP > 0 && ch !== ' '){
+            const seed = decoderSeed[charIdx] || 0;
+            const idx = Math.floor((t*20 + seed)) % decoderChars.length;
+            drawChar = decoderChars[idx];
+          }
+          alpha = Math.min(1, localP*3);
+          break;
+        case 'typewriter':
+          alpha = localP > 0.01 ? 1 : 0;
+          // cursor on last visible char
+          break;
+        case 'randomFade':
+          alpha = e; dy = (1-e)*20; break;
+        case 'fade':
+          alpha = e; break;
+        case 'rotate':
+          rot = (1-e)*90; alpha = e; sc = 0.5+e*0.5; break;
+        case 'blur':
+          bl = (1-e)*20; alpha = e; break;
+      }
+
+      // Motion blur
+      if(state.motionBlur && phase!=='hold' && localP>0 && localP<1){
+        bl += (1-e)*6;
+      }
+
+      const cx = x + widths[ci]/2 + dx + kern*(ci - chars.length/2);
+      const cy = y + dy;
+
+      ctx.translate(cx, cy);
+      ctx.rotate(rot*Math.PI/180);
+      ctx.scale(sc, sc);
+      ctx.globalAlpha *= alpha;
+      if(bl>0) ctx.filter = `blur(${bl}px)`;
+
+      drawGlyph(ctx, drawChar, -widths[ci]/2, 0);
+
+      ctx.restore();
+      x += widths[ci] + state.letterSpace;
+      charIdx++;
+    });
+
+    // Typewriter cursor
+    if(state.preset==='typewriter' && phase==='in'){
+      const visCount = Math.floor(p * totalChars / (1 - (totalChars-1)*state.stagger/1000/inDur + 0.0001));
+      if(Math.floor(t*2)%2===0 && charIdx >= visCount){
+        ctx.fillStyle = state.textColor;
+        ctx.fillRect(x, y-state.size*0.4, 4, state.size*0.8);
+      }
+    }
+  });
+
+  ctx.restore();
+}
+
+function drawGlyph(ctx, ch, x, y){
+  if(state.renderMode==='fill' || state.renderMode==='both'){
+    ctx.fillStyle = state.textColor;
+    ctx.fillText(ch, x, y);
+  }
+  if(state.renderMode==='stroke' || state.renderMode==='both'){
+    ctx.strokeStyle = state.strokeColor;
+    ctx.lineWidth = state.strokeWidth;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(ch, x, y);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PLAYBACK
+   ═══════════════════════════════════════════════════════════ */
+const preview = document.getElementById('preview');
+const pctx = preview.getContext('2d');
+let lastTime = 0;
+
+function loop(now){
+  if(state.playing){
+    const dt = (now - lastTime)/1000;
+    state.time += dt;
+    if(state.time >= state.duration){
+      state.time = 0; // loop
+    }
+  }
+  lastTime = now;
+  render(pctx, state.time);
+  updateTimeline();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function updateTimeline(){
+  const pct = (state.time/state.duration)*100;
+  document.getElementById('tlHead').style.left = `calc(${pct}% - 2px)`;
+  document.getElementById('tlFill').style.width = pct+'%';
+  document.getElementById('tlTime').textContent =
+    `${state.time.toFixed(2)} / ${state.duration.toFixed(2)}`;
+}
+
+function buildTicks(){
+  const el = document.getElementById('tlTicks');
+  const n = Math.ceil(state.duration);
+  el.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const s = document.createElement('span');
+    s.dataset.t = i+'s';
+    el.appendChild(s);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UI WIRING
+   ═══════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+
+// Text
+$('txtContent').addEventListener('input', e=>{ state.text = e.target.value; rebuildRandom(); });
+
+// Font family
+$('fontFamily').addEventListener('change', e=>{
+  state.font = e.target.value;
+  loadFont(state.font);
+});
+$('customFont').addEventListener('change', e=>{
+  const f = e.target.value.trim();
+  if(f){ state.font = f; loadFont(f); }
+});
+
+// Pill groups
+function wirePills(id, key, attr){
+  const g = $(id);
+  g.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      g.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      state[key] = b.dataset[attr];
+      if(key==='weight') state[key] = parseInt(state[key]);
+    });
+  });
+}
+wirePills('weightGroup','weight','w');
+wirePills('styleGroup','style','s');
+wirePills('alignGroup','align','a');
+wirePills('renderGroup','renderMode','r');
+
+// Ranges
+function wireRange(id, key, suffix='', scale=1){
+  const el = $(id), val = $(id+'Val');
+  el.addEventListener('input', e=>{
+    state[key] = parseFloat(e.target.value)*scale;
+    if(val) val.textContent = e.target.value + suffix;
+  });
+}
+wireRange('fontSize','size');
+wireRange('letterSpace','letterSpace');
+wireRange('strokeWidth','strokeWidth');
+wireRange('opacity','opacity','%');
+wireRange('rotation','rotation','°');
+wireRange('scale','scale','%');
+wireRange('blur','blur','px');
+wireRange('stagger','stagger','ms');
+$('animIn').addEventListener('input',e=>{
+  state.animIn = parseFloat(e.target.value);
+  $('animInVal').textContent = state.animIn.toFixed(1)+'s';
+});
+
+// Colors
+$('textColor').addEventListener('input',e=>state.textColor=e.target.value);
+$('strokeColor').addEventListener('input',e=>state.strokeColor=e.target.value);
+$('bgColor').addEventListener('input',e=>state.bgColor=e.target.value);
+
+// Switches
+function wireSwitch(id, key){
+  const el = $(id);
+  el.addEventListener('click', ()=>{
+    state[key] = !state[key];
+    el.classList.toggle('on', state[key]);
+  });
+}
+wireSwitch('bgSwitch','bgOn');
+wireSwitch('animOutSwitch','animOut');
+wireSwitch('motionBlurSwitch','motionBlur');
+
+// Easing
+$('easing').addEventListener('change',e=>state.easing=e.target.value);
+
+// Presets
+document.querySelectorAll('.preset').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.preset').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.preset = b.dataset.p;
+    rebuildRandom();
+    state.time = 0;
+  });
+});
+
+// Duration
+$('duration').addEventListener('input',e=>{
+  let v = Math.max(0.5, Math.min(5, parseFloat(e.target.value)||3));
+  state.duration = v;
+  e.target.value = v;
+  buildTicks();
+});
+
+// Play
+$('btnPlay').addEventListener('click',()=>{
+  state.playing = !state.playing;
+  $('iconPlay').style.display = state.playing?'none':'block';
+  $('iconPause').style.display = state.playing?'block':'none';
+});
+
+// Timeline scrub
+const track = $('tlTrack');
+let scrubbing = false;
+function scrub(e){
+  const r = track.getBoundingClientRect();
+  const x = (e.clientX ?? e.touches[0].clientX) - r.left;
+  state.time = Math.max(0, Math.min(1, x/r.width)) * state.duration;
+}
+track.addEventListener('mousedown',e=>{scrubbing=true;scrub(e);});
+window.addEventListener('mousemove',e=>{if(scrubbing)scrub(e);});
+window.addEventListener('mouseup',()=>scrubbing=false);
+track.addEventListener('touchstart',e=>{scrubbing=true;scrub(e);});
+window.addEventListener('touchmove',e=>{if(scrubbing)scrub(e);});
+window.addEventListener('touchend',()=>scrubbing=false);
+
+/* ═══════════════════════════════════════════════════════════
+   SAVE / LOAD PROJECT
+   ═══════════════════════════════════════════════════════════ */
+$('btnSave').addEventListener('click',()=>{
+  const save = {...state, playing:false, time:0};
+  const blob = new Blob([JSON.stringify(save,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'project.typemotion';
+  a.click();
+});
+
+$('btnOpen').addEventListener('click',()=>$('fileInput').click());
+$('fileInput').addEventListener('change',e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      Object.assign(state, data);
+      state.playing = false; state.time = 0;
+      syncUI();
+      loadFont(state.font);
+      rebuildRandom();
+      buildTicks();
+    }catch(err){ alert('Invalid project file'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+function syncUI(){
+  $('txtContent').value = state.text;
+  $('fontFamily').value = state.font;
+  $('fontSize').value = state.size; $('fontSizeVal').textContent = state.size;
+  $('letterSpace').value = state.letterSpace; $('letterSpaceVal').textContent = state.letterSpace;
+  $('strokeWidth').value = state.strokeWidth; $('strokeWidthVal').textContent = state.strokeWidth;
+  $('opacity').value = state.opacity; $('opacityVal').textContent = state.opacity+'%';
+  $('rotation').value = state.rotation; $('rotationVal').textContent = state.rotation+'°';
+  $('scale').value = state.scale; $('scaleVal').textContent = state.scale+'%';
+  $('blur').value = state.blur; $('blurVal').textContent = state.blur+'px';
+  $('stagger').value = state.stagger; $('staggerVal').textContent = state.stagger+'ms';
+  $('animIn').value = state.animIn; $('animInVal').textContent = state.animIn.toFixed(1)+'s';
+  $('textColor').value = state.textColor;
+  $('strokeColor').value = state.strokeColor;
+  $('bgColor').value = state.bgColor;
+  $('easing').value = state.easing;
+  $('duration').value = state.duration;
+  // pill groups
+  const setPill=(id,attr,val)=>{
+    $(id).querySelectorAll('button').forEach(b=>
+      b.classList.toggle('active', b.dataset[attr]==String(val)));
+  };
+  setPill('weightGroup','w',state.weight);
+  setPill('styleGroup','s',state.style);
+  setPill('alignGroup','a',state.align);
+  setPill('renderGroup','r',state.renderMode);
+  document.querySelectorAll('.preset').forEach(b=>
+    b.classList.toggle('active', b.dataset.p===state.preset));
+  $('bgSwitch').classList.toggle('on',state.bgOn);
+  $('animOutSwitch').classList.toggle('on',state.animOut);
+  $('motionBlurSwitch').classList.toggle('on',state.motionBlur);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT — MP4/WebM & GIF
+   ═══════════════════════════════════════════════════════════ */
+let exportFormat = 'mp4';
+let exportBg = true;
+
+$('btnExport').addEventListener('click',()=>{
+  $('exportModal').classList.add('open');
+});
+$('btnCancelExport').addEventListener('click',()=>{
+  $('exportModal').classList.remove('open');
+});
+$('formatGroup').querySelectorAll('button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    $('formatGroup').querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    exportFormat = b.dataset.f;
+  });
+});
+$('exportBgSwitch').addEventListener('click',function(){
+  exportBg = !exportBg;
+  this.classList.toggle('on',exportBg);
+});
+
+$('btnDoExport').addEventListener('click', async ()=>{
+  const fps = parseInt($('exportFps').value);
+  const prog = $('exportProgress');
+  const bar = $('exportBar');
+  prog.classList.add('active');
+  bar.style.width = '0%';
+  $('btnDoExport').disabled = true;
+
+  state.playing = false;
+  const rc = $('renderCanvas');
+  const rctx = rc.getContext('2d');
+
+  try{
+    if(exportFormat==='mp4'){
+      await exportVideo(rc, rctx, fps, bar);
+    } else {
+      await exportGIF(rc, rctx, fps, bar);
+    }
+  }catch(err){
+    alert('Export failed: '+err.message);
+  }
+
+  prog.classList.remove('active');
+  $('btnDoExport').disabled = false;
+  $('exportModal').classList.remove('open');
+});
+
+async function exportVideo(canvas, ctx, fps, bar){
+  const stream = canvas.captureStream(fps);
+  const mimeTypes = ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'];
+  let mime = mimeTypes.find(m=>MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const rec = new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:8000000});
+  const chunks = [];
+  rec.ondataavailable = e=>chunks.push(e.data);
+
+  const done = new Promise(res=>rec.onstop=res);
+  rec.start();
+
+  const frames = Math.ceil(state.duration * fps);
+  for(let i=0;i<=frames;i++){
+    const t = (i/frames)*state.duration;
+    render(ctx, t, exportBg);
+    bar.style.width = (i/frames*100)+'%';
+    await new Promise(r=>setTimeout(r, 1000/fps));
+  }
+  rec.stop();
+  await done;
+
+  const ext = mime.includes('mp4')?'mp4':'webm';
+  const blob = new Blob(chunks,{type:mime});
+  downloadBlob(blob, `typemotion.${ext}`);
+}
+
+async function exportGIF(canvas, ctx, fps, bar){
+  const gif = new GIFEncoder(1280, 720);
+  gif.setDelay(Math.round(1000/fps));
+  gif.setRepeat(0);
+  if(!exportBg) gif.setTransparent(0x00FF00);
+  gif.start();
+
+  const frames = Math.ceil(state.duration * fps);
+  for(let i=0;i<=frames;i++){
+    const t = (i/frames)*state.duration;
+    if(!exportBg){
+      ctx.fillStyle = '#00FF00';
+      ctx.fillRect(0,0,1280,720);
+      const tmp = state.bgOn; state.bgOn = false;
+      render(ctx, t, false);
+      state.bgOn = tmp;
+    } else {
+      render(ctx, t, true);
+    }
+    gif.addFrame(ctx);
+    bar.style.width = (i/frames*100)+'%';
+    await new Promise(r=>setTimeout(r,1));
+  }
+  gif.finish();
+  const blob = new Blob([new Uint8Array(gif.out)],{type:'image/gif'});
+  downloadBlob(blob, 'typemotion.gif');
+}
+
+function downloadBlob(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EMBEDDED GIF ENCODER (minimal LZW)
+   ═══════════════════════════════════════════════════════════ */
+class GIFEncoder{
+  constructor(w,h){
+    this.w=w;this.h=h;this.out=[];this.delay=100;this.repeat=0;
+    this.transparent=null;this.first=true;
+  }
+  setDelay(ms){this.delay=Math.round(ms/10);}
+  setRepeat(r){this.repeat=r;}
+  setTransparent(c){this.transparent=c;}
+  start(){
+    this.writeStr("GIF89a");
+    this.writeShort(this.w);this.writeShort(this.h);
+    this.out.push(0xF0|0x07);this.out.push(0);this.out.push(0);
+    // global color table (256 colors, filled later per frame actually we use local)
+    for(let i=0;i<256;i++){this.out.push(i);this.out.push(i);this.out.push(i);}
+    // app ext for loop
+    this.out.push(0x21,0xFF,0x0B);
+    this.writeStr("NETSCAPE2.0");
+    this.out.push(0x03,0x01);
+    this.writeShort(this.repeat);
+    this.out.push(0);
+  }
+  addFrame(ctx){
+    const img = ctx.getImageData(0,0,this.w,this.h).data;
+    const {pixels,palette,transIdx} = this.quantize(img);
+    // graphic control ext
+    this.out.push(0x21,0xF9,0x04);
+    this.out.push(this.transparent!==null?0x09:0x08);
+    this.writeShort(this.delay);
+    this.out.push(this.transparent!==null?transIdx:0);
+    this.out.push(0);
+    // image descriptor
+    this.out.push(0x2C);
+    this.writeShort(0);this.writeShort(0);
+    this.writeShort(this.w);this.writeShort(this.h);
+    this.out.push(0x87); // local color table, 256 colors
+    for(let i=0;i<256;i++){
+      const c = palette[i]||[0,0,0];
+      this.out.push(c[0],c[1],c[2]);
+    }
+    this.lzw(pixels);
+  }
+  finish(){this.out.push(0x3B);}
+  writeStr(s){for(let i=0;i<s.length;i++)this.out.push(s.charCodeAt(i));}
+  writeShort(v){this.out.push(v&0xFF,(v>>8)&0xFF);}
+  quantize(data){
+    // simple 6-8-5 bit quantization -> 256 colors via median cut lite
+    const n = this.w*this.h;
+    const pixels = new Uint8Array(n);
+    const palette = [];
+    const map = new Map();
+    let transIdx = 0;
+    const tr = this.transparent;
+    for(let i=0;i<n;i++){
+      let r=data[i*4],g=data[i*4+1],b=data[i*4+2];
+      // reduce precision
+      r=r&0xF8;g=g&0xFC;b=b&0xF8;
+      const key=(r<<16)|(g<<8)|b;
+      let idx = map.get(key);
+      if(idx===undefined){
+        if(palette.length<256){
+          idx=palette.length;
+          palette.push([r,g,b]);
+          map.set(key,idx);
+          if(tr!==null && r===((tr>>16)&0xF8) && g===((tr>>8)&0xFC) && b===(tr&0xF8)) transIdx=idx;
+        }else{
+          // find nearest
+          let best=0,bd=1e9;
+          for(let j=0;j<256;j++){
+            const p=palette[j];
+            const d=(p[0]-r)**2+(p[1]-g)**2+(p[2]-b)**2;
+            if(d<bd){bd=d;best=j;}
+          }
+          idx=best;map.set(key,idx);
+        }
+      }
+      pixels[i]=idx;
+    }
+    return {pixels,palette,transIdx};
+  }
+  lzw(pixels){
+    const minCode=8;
+    this.out.push(minCode);
+    const clear=1<<minCode, eoi=clear+1;
+    let codeSize=minCode+1, dict=new Map(), next=eoi+1;
+    let buf=0,bits=0;
+    const bytes=[];
+    const emit=c=>{
+      buf|=c<<bits;bits+=codeSize;
+      while(bits>=8){bytes.push(buf&0xFF);buf>>=8;bits-=8;}
+    };
+    emit(clear);
+    let prev=pixels[0];
+    for(let i=1;i<pixels.length;i++){
+      const c=pixels[i];
+      const key=(prev<<12)|c;
+      if(dict.has(key)){prev=dict.get(key);}
+      else{
+        emit(prev);
+        dict.set(key,next++);
+        if(next>(1<<codeSize)&&codeSize<12)codeSize++;
+        if(next>=4096){emit(clear);dict.clear();next=eoi+1;codeSize=minCode+1;}
+        prev=c;
+      }
+    }
+    emit(prev);emit(eoi);
+    if(bits>0)bytes.push(buf&0xFF);
+    // write sub-blocks
+    let p=0;
+    while(p<bytes.length){
+      const len=Math.min(255,bytes.length-p);
+      this.out.push(len);
+      for(let i=0;i<len;i++)this.out.push(bytes[p+i]);
+      p+=len;
+    }
+    this.out.push(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+loadFont(state.font);
+rebuildRandom();
+buildTicks();
+
+// Responsive canvas scaling
+function fitCanvas(){
+  const wrap = document.querySelector('.canvas-wrap');
+  const frame = document.querySelector('.canvas-frame');
+  const pad = 48;
+  const availW = wrap.clientWidth - pad;
+  const availH = wrap.clientHeight - pad;
+  const scale = Math.min(availW/1280, availH/720, 1);
+  frame.style.width = (1280*scale)+'px';
+  frame.style.height = (720*scale)+'px';
+}
+window.addEventListener('resize', fitCanvas);
+setTimeout(fitCanvas, 50);
+</script>
+</body>
+</html>
